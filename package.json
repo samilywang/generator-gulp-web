@@ -2,9 +2,14 @@
   "name": "generator-gulp-web",
   "version": "0.0.1",
   "description": "A yeoman generator for web app bootstarping",
+  "main": "app/index.js",
   "keywords": [
     "yeoman-generator"
   ],
+  "repository":{
+    "type": "git",
+    "url": "git://github.com/samilywang/generator-gulp-web.git"
+  },
   "files": [
     "app"
   ],
