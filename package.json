@@ -1,0 +1,15 @@
+{
+  "name": "generator-gulp-web",
+  "version": "0.0.1",
+  "description": "A yeoman generator for web app bootstarping",
+  "keywords": [
+    "yeoman-generator"
+  ],
+  "files": [
+    "app"
+  ],
+  "dependencies": {
+    "mkdirp": "^0.5.1",
+    "yeoman-generator": "^0.20.3"
+  }
+}
