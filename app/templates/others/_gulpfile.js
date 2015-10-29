@@ -12,7 +12,8 @@ var gulp = require('gulp'),
     gulpif = require('gulp-if'),
     jshint = require('gulp-jshint'),
     stylish = require('jshint-stylish'),
-    concat = require('gulp-concat');
+    concat = require('gulp-concat'),
+    sass= require('gulp-sass');
 
 var args = require('yargs')
     .alias('d', 'debug')
@@ -46,54 +47,6 @@ gulp.task('fonts', function(){
         .pipe(gulp.dest(targetDir+'/fonts'));
 });
 
-//导入相关的css库文件和js库文件
-gulp.task('inject', function(){
-
-    var sources = gulp.src(['app/scripts/**/*.js', 'app/styles/**/*.css'], {read:false});
-    var libSources = gulp.src(mainBowerFiles({filter: '**/*.{css,js}'}));
-
-    gulp.src('app/index.html')
-        .pipe(inject(libSources, {name: 'bower'}))
-        .pipe(inject(sources, {relative: true}))
-        .pipe(gulp.dest(targetDir));
-});
-
-//检查js语法
-gulp.task('jshint', function(){
-    gulp.src('app/scripts/**/*.js')
-        .pipe(jshint())
-        .pipe(jshint.reporter(stylish));
-});
-
-//在生产状态下, 压缩js文件
-gulp.task('uglify', function(){
-    var assets = useref.assets();
-    var sources = gulp.src(['app/scripts/**/*.js', 'app/styles/**/*.css'], {read:false});
-    var libSources = gulp.src(mainBowerFiles({filter: '**/*.{css,js}'}));
-
-    gulp.src('app/index.html')
-        .pipe(inject(libSources, {name: 'bower', relative: true}))
-        .pipe(inject(sources, {relative: true}))
-        .pipe(assets)
-        .pipe(gulpif('*.js', uglify()))
-        .pipe(gulpif('*.css', minifyCss()))
-        .pipe(assets.restore())
-        .pipe(useref())
-        .pipe(gulp.dest(targetDir));
-});
-
-//复制css文件
-gulp.task('styles', function(){
-    gulp.src('app/styles/**/*.css')
-        .pipe(gulp.dest(targetDir+'/styles'));
-});
-
-//复制js文件
-gulp.task('scripts', function(){
-    gulp.src('app/scripts/**/*.js')
-        .pipe(gulp.dest(targetDir+'/scripts'));
-});
-
 //复制templates文件
 gulp.task('templates', function(){
     gulp.src('app/templates/**/*.html')
@@ -104,6 +57,64 @@ gulp.task('templates', function(){
 gulp.task('images', function(){
     gulp.src('app/images/**/*')
         .pipe(gulp.dest(targetDir+'/images'));
+});
+
+
+//编译sass,scss,复制css
+gulp.task('styles', function(){
+    gulp.src('app/styles/**/*.{css,sass,scss}')
+        .pipe(gulpif('*.sass' || '*.scss', sass().on('error', sass.logError)))
+        .pipe(gulp.dest(targetDir + '/styles'));
+});
+
+//复制js文件
+gulp.task('scripts', function(){
+    gulp.src('app/scripts/**/*.js')
+        .pipe(gulp.dest(targetDir + '/scripts'));
+});
+
+//导入相关的css库文件和js库文件
+gulp.task('inject', function(){
+    var styles = gulp.src('app/styles/**/*.{css,sass,scss}')
+        .pipe(gulpif('*.sass' || '*.scss', sass().on('error', sass.logError)));
+
+    var scripts = gulp.src('app/scripts/**/*.js', {read: false});
+
+    var libSources = gulp.src(mainBowerFiles({filter: '**/*.{css,js}'}), {read: false});
+
+    gulp.src('app/index.html')
+        .pipe(inject(libSources, {name: 'lib'}))
+        .pipe(inject(styles, {name: 'sass', relative: true}))
+        .pipe(inject(scripts, {relative: true}))
+        .pipe(gulp.dest(targetDir));
+});
+
+//检查js语法
+gulp.task('jshint', function(){
+    gulp.src('app/scripts/**/*.js')
+        .pipe(jshint())
+        .pipe(jshint.reporter(stylish));
+});
+
+//在生产状态下, 构建和压缩css,js文件
+gulp.task('uglify', function(){
+    var assets = useref.assets();
+    var styles = gulp.src('app/styles/**/*.{css,sass,scss}')
+        .pipe(gulpif('*.sass' || '*.scss', sass().on('error', sass.logError)))
+        .pipe(gulp.dest('.tmp/sass'));
+    var scripts = gulp.src('app/scripts/**/*.js', {read:false});
+    var libSources = gulp.src(mainBowerFiles({filter: '**/*.{css,js}'}), {read: false});
+
+    gulp.src('app/index.html')
+        .pipe(inject(libSources, {name: 'lib', relative: true}))
+        .pipe(inject(styles, {name: 'sass', relative: true}))
+        .pipe(inject(scripts, {relative: true}))
+        .pipe(assets)
+        .pipe(gulpif('*.js', uglify()))
+        .pipe(gulpif('*.css', minifyCss()))
+        .pipe(assets.restore())
+        .pipe(useref())
+        .pipe(gulp.dest(targetDir));
 });
 
 //允许一个小型后台进行效果的查看
@@ -150,10 +161,10 @@ gulp.task('default', function(){
             'clean',
             'fonts',
             'images',
-            'styles',
             'templates',
-            'inject',
+            'styles',
             'scripts',
+            'inject',
             'serve'
         );
     }

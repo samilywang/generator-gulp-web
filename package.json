@@ -1,15 +1,22 @@
 {
   "name": "generator-gulp-web",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "A yeoman generator for web app bootstarping",
   "keywords": [
     "yeoman-generator",
+    "gulp",
     "angular",
     "bootstrap"
   ],
+  "license" : "MIT",
+  "main": "app/index.js",
   "repository": "samilywang/generator-gulp-web",
   "dependencies": {
     "mkdirp": "^0.5.1",
     "yeoman-generator": "^0.20.3"
+  },
+  "author":{
+    "name": "Samily Wang",
+    "email": "samilywang@icloud.com"
   }
 }
